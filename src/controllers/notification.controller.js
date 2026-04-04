@@ -1,7 +1,14 @@
+/**
+ * --- FRONTEND INTEGRATION GUIDE: Notification Controllers ---
+ * Base Path: /notifications
+ */
 const notificationService = require("../services/notification.services");
 const asyncHandler = require("../utils/asyncHandler");
 
 const getNotificationsController = asyncHandler(async (req, res) => {
+// --- FRONTEND INTEGRATION GUIDE: Get My Notifications ---
+// GET /notifications
+// Required: Authorization: Bearer <accessToken>
     const userId = req.user.userId;
     // Standardize on unread notifications for now as per test requirements
     const notifications = await notificationService.getUnreadNotifications(userId);
@@ -18,6 +25,9 @@ const getUnreadNotificationsController = asyncHandler(async (req, res) => {
 });
 
 const markAsReadController = asyncHandler(async (req, res) => {
+// --- FRONTEND INTEGRATION GUIDE: Mark Notification as Read ---
+// PATCH /notifications/:id/read
+// Required: Authorization: Bearer <accessToken>
     const userId = req.user.userId;
     const notificationId = req.params.id;
     if (!notificationId) {
