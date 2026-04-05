@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Vendor Schedule - Utsavya</title>
+
+    <link rel="stylesheet" href="css/schedule_vendor.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        .sidebar-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 14px; font-weight: 500; }
+        .form-group input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-family: inherit; }
+        .btn-primary { 
+            width: 100%; padding: 12px; border-radius: 8px; border: none; 
+            background: #a6845d; color: #fff; font-weight: 600; cursor: pointer;
+        }
+        .blocked-item {
+            padding: 10px; border-bottom: 1px solid #eee; font-size: 13px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .btn-delete { color: #dc3545; cursor: pointer; background: none; border: none; font-size: 16px; }
+        .event-card .status-badge {
+            display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 10px;
+        }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-accepted { background: #d4edda; color: #155724; }
+        .status-completed { background: #e2e3e5; color: #383d41; }
+        .action-btn { 
+            margin-top: 15px; padding: 8px 15px; border-radius: 6px; border: none; 
+            background: #28a745; color: #fff; cursor: pointer; font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+
+    <header class="navbar">
+
+        <div class="logo">
+            <img src="images/logo.png" alt="" width="60">
+            <span>UTSAVYA</span>
+        </div>
+
+        <input type="checkbox" id="nav-toggle" class="nav-toggle">
+        <label for="nav-toggle" class="nav-toggle-label">☰</label>
+
+        <nav class="nav-menu">
+            <a href="dashboard.html">Home</a>
+            <a href="vendor_schedule.html" class="active">Schedule</a>
+            <a href="vendor_memories.html">Memories</a>
+        </nav>
+
+        <div class="profile">
+            Hello Vendor
+            <img src="images/profile.png">
+            <button class="notifications-btn">🔔</button>
+        </div>
+
+    </header>
+
+    <!-- HERO SECTION -->
+
+    <section class="hero">
+
+        <div class="hero-overlay"></div>
+        <div class="bokeh">
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+        </div>
+
+        <div class="hero-content">
+            <h1>Monitor Your <span>Reviews, Complaints, and Bookings</span></h1>
+            <div class="search-box">
+                <select id="statusFilter">
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="accepted">Accepted</option>
+                    <option value="completed">Completed</option>
+                </select>
+                <input type="text" id="searchInput" placeholder="Search events...">
+                <button id="searchBtn">Filter</button>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- MAIN CONTENT -->
+
+    <div class="main-container">
+
+        <main class="vendors-section">
+            <div class="vendors-grid" id="vendorsGrid">
+                <p>Loading your schedule...</p>
+            </div>
+        </main>
+
+        <aside class="right-sidebar">
+            <div class="sidebar-card">
+                <h3>Manage Availability</h3>
+                <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Block dates when you are away.</p>
+                <form id="availabilityForm">
+                    <div class="form-group">
+                        <label>Start Time</label>
+                        <input type="datetime-local" id="blockStart" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Time</label>
+                        <input type="datetime-local" id="blockEnd" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Reason</label>
+                        <input type="text" id="blockReason" placeholder="Vacation, etc.">
+                    </div>
+                    <button type="submit" class="btn-primary">Block Dates</button>
+                </form>
+            </div>
+
+            <div class="sidebar-card">
+                <h3>Blocked Dates</h3>
+                <div id="blockedDatesList">
+                    <p style="font-size: 13px; color: #888;">No dates blocked.</p>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <footer>
+        <p>© 2026 Utsavya</p>
+    </footer>
+
+    <script src="js/vendor_schedule.js"></script>
+    <script src="js/navbar.js"></script>
+</body>
+
+</html>

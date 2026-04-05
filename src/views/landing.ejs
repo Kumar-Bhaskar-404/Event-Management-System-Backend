@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Utsavya - Your Perfect Event Partner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #fff5e6, #f7e7ce);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Navbar */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            background: transparent;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 700;
+            color: #7a4c00;
+            text-decoration: none;
+            letter-spacing: 1px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #555;
+            margin-left: 30px;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #dd4646;
+        }
+
+        .nav-buttons .btn {
+            padding: 10px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 15px;
+            transition: all 0.3s;
+        }
+
+        .btn-login {
+            border: 2px solid #dd4646;
+            color: #dd4646;
+        }
+
+        .btn-login:hover {
+            background: #dd4646;
+            color: white;
+        }
+
+        .btn-signup {
+            background: #dd4646;
+            color: white;
+            box-shadow: 0 4px 15px rgba(221, 70, 70, 0.3);
+        }
+
+        .btn-signup:hover {
+            background: #972c2c;
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 50px 10%;
+            flex: 1;
+        }
+
+        .hero-content {
+            max-width: 50%;
+        }
+
+        .hero-title {
+            font-size: 55px;
+            font-weight: 700;
+            color: #333;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        .hero-title span {
+            color: #dd4646;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .hero-buttons .btn {
+            padding: 15px 35px;
+            border-radius: 30px;
+            font-size: 18px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #dd4646;
+            color: white;
+            box-shadow: 0 10px 20px rgba(221, 70, 70, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #972c2c;
+            transform: translateY(-3px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #dd4646;
+            margin-left: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-secondary:hover {
+            background: #fdfdfd;
+            transform: translateY(-3px);
+        }
+
+        /* Mascot Decoration */
+        .mascot-box {
+            position: relative;
+            width: 40%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mascot-box img {
+            width: 100%;
+            max-width: 400px;
+            animation: float 6s ease-in-out infinite;
+            filter: drop-shadow(0 20px 30px rgba(0,0,0,0.1));
+            border-radius: 20px; /* soft edges */
+            mix-blend-mode: multiply; /* Helps the solid white background blend into the landing page */
+        }
+
+        /* Abstract blobs */
+        .blob {
+            position: absolute;
+            background: #ffecd2;
+            filter: blur(50px);
+            z-index: -1;
+            border-radius: 50%;
+        }
+
+        .blob-1 {
+            width: 300px;
+            height: 300px;
+            top: 10%;
+            right: 5%;
+            background: #ffb8b8;
+        }
+
+        .blob-2 {
+            width: 400px;
+            height: 400px;
+            bottom: -10%;
+            left: -5%;
+            background: #ffe29f;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(2deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        @media (max-width: 900px) {
+            .hero {
+                flex-direction: column-reverse;
+                text-align: center;
+                padding: 30px 5%;
+            }
+            .hero-content {
+                max-width: 100%;
+                margin-top: 40px;
+            }
+            .mascot-box {
+                width: 80%;
+            }
+            .hero-title {
+                font-size: 40px;
+            }
+            .hero-buttons .btn {
+                margin: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <header>
+        <a href="/" class="logo">Utsavya</a>
+        <div class="nav-links">
+            <a href="/about.html">About</a>
+            <a href="/events_page.html">Events</a>
+            <a href="/vendors_page.html">Vendors</a>
+        </div>
+        <div class="nav-buttons">
+            <a href="/login2.html" class="btn btn-login">Login</a>
+            <a href="/signup.html" class="btn btn-signup">Sign Up</a>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Create Unforgettable <span>Memories</span> with Utsavya</h1>
+            <p class="hero-subtitle">Your perfect event is just a click away. Connect with top vendors, customize your events, and manage everything in one seamless experience.</p>
+            <div class="hero-buttons">
+                <a href="/signup.html" class="btn btn-primary">Get Started</a>
+                <a href="/events_page.html" class="btn btn-secondary">Explore Events</a>
+            </div>
+        </div>
+        
+        <div class="mascot-box">
+            <img src="/images/turban_guy.png" alt="Happy traditional Indian event partner saying hi">
+        </div>
+    </section>
+
+    <script>
+        // Check if user is already logged in, redirect them seamlessly
+        const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+        if (token) {
+            // Need a tiny script to check role or just go to dashboard
+            const loginBtn = document.querySelector('.btn-login');
+            const signupBtn = document.querySelector('.btn-signup');
+            
+            loginBtn.textContent = 'Dashboard';
+            loginBtn.href = '/dashboard.html';
+            
+            signupBtn.textContent = 'Logout';
+            signupBtn.href = '#';
+            signupBtn.classList.replace('btn-signup', 'btn-login'); // visually like a secondary action
+            
+            signupBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('authToken');
+                window.location.reload();
+            });
+        }
+    </script>
+</body>
+</html>
