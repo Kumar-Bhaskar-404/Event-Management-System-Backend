@@ -306,62 +306,11 @@
             radio.addEventListener('change', filterVendors);
         });
 
-        // Filter Vendors
+        // Filter Vendors (Triggers API Search)
         function filterVendors() {
-            const category = document.querySelector('input[name="category"]:checked').value;
-            const budget = parseInt(document.getElementById('budgetSlider').value);
-            const eventType = document.getElementById('eventSelect').value;
-            const searchTerm = document.querySelector('.search-box input').value.toLowerCase().trim();
-
-            const vendorCards = document.querySelectorAll('.vendor-card');
-            const vendorsGrid = document.getElementById('vendorsGrid');
-            let visibleCount = 0;
-
-            vendorCards.forEach(card => {
-                const cardCategory = card.getAttribute('data-category');
-                const cardPrice = parseInt(card.getAttribute('data-price'));
-                const cardEvents = (card.getAttribute('data-event-types') || '').split(',');
-                const vendorName = card.querySelector('h3').textContent.toLowerCase();
-                const categoryLabel = card.querySelector('.category').textContent.toLowerCase();
-
-                const categoryMatch = category === 'all' || cardCategory === category;
-                const priceMatch = cardPrice <= budget;
-                const eventMatch = eventType === 'all' || cardEvents.includes(eventType);
-
-                const searchMatch = !searchTerm ||
-                    vendorName.includes(searchTerm) ||
-                    categoryLabel.includes(searchTerm) ||
-                    cardEvents.some(evt => evt.includes(searchTerm));
-
-                if (categoryMatch && priceMatch && eventMatch && searchMatch) {
-                    card.style.display = 'block';
-                    card.style.animation = 'fadeIn 0.3s ease-in';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            document.getElementById('vendorCount').textContent = visibleCount + ' Vendor' + (visibleCount !== 1 ? 's' : '');
-
-            // Show no-results placeholder when no vendors match
-            const existingNoResults = document.querySelector('.no-results');
-            if (visibleCount === 0) {
-                if (!existingNoResults) {
-                    const noResults = document.createElement('div');
-                    noResults.className = 'no-results';
-                    noResults.textContent = 'No vendors found matching your filters';
-                    noResults.style.cssText = `
-                        grid-column: 1 / -1;
-                        text-align: center;
-                        padding: 40px;
-                        color: #999;
-                        font-size: 16px;
-                    `;
-                    vendorsGrid.appendChild(noResults);
-                }
-            } else if (existingNoResults) {
-                existingNoResults.remove();
+            if (typeof loadVendors === 'function') {
+                document.getElementById('vendorsGrid').innerHTML = '<div class="loading"><p>Loading vendors...</p></div>';
+                loadVendors();
             }
         }
 

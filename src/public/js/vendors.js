@@ -63,7 +63,17 @@ async function loadVendors() {
             return;
         }
 
-        const response = await fetch('/vendors', {
+        // Fetch DOM filters if evaluating
+        const categoryVal = document.querySelector('input[name="category"]:checked')?.value || 'all';
+        const budgetVal = document.getElementById('budgetSlider')?.value || 100000;
+        const searchTerm = document.querySelector('.search-box input')?.value.toLowerCase().trim() || '';
+        
+        let url = new URL(window.location.origin + '/vendors');
+        if (categoryVal !== 'all') url.searchParams.append('service', categoryVal);
+        if (budgetVal < 100000) url.searchParams.append('max_price', budgetVal);
+        if (searchTerm) url.searchParams.append('city', searchTerm); // matching text to city or service name based on API support
+
+        const response = await fetch(url.pathname + url.search, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -126,7 +136,7 @@ function renderVendors(vendors) {
     `).join('');
 }
 
-function addToCart(button) {
+async function addToCart(button) {
     if (!selectedBookingId) {
         showNotification('Please select an event first from the Events page.', 'error');
         return;
@@ -143,20 +153,47 @@ function addToCart(button) {
     const existingItem = cart.find(item => item.vendorId === vendorId);
 
     if (!existingItem) {
-        cart.push({
-            vendorId: vendorId,
-            name: vendorName,
-            category: vendorCategory,
-            location: vendorLocation
-        });
-
-        // Update button
-        button.textContent = '✓ Added';
-        button.classList.add('added');
+        button.textContent = 'Loading...';
         button.disabled = true;
 
-        // Show confirmation
-        showNotification(`${vendorName} added to your event!`);
+        try {
+            // Fetch vendor profile to get a valid service_id
+            const token = localStorage.getItem('accessToken') || localStorage.getItem('authToken');
+            const response = await fetch(`/vendors/${vendorId}`);
+            const profile = await response.json();
+            
+            let serviceId = null;
+            let price = 0;
+            if (profile.services && profile.services.length > 0) {
+                serviceId = profile.services[0].id;
+                price = parseFloat(profile.services[0].price) || 0;
+            } else {
+                throw new Error("No services found for this vendor");
+            }
+
+            cart.push({
+                vendorId: vendorId,
+                name: vendorName,
+                category: vendorCategory,
+                location: vendorLocation,
+                serviceId: serviceId,
+                price: price
+            });
+
+            // Update button
+            button.textContent = '✓ Added';
+            button.classList.add('added');
+            button.disabled = true;
+
+            // Show confirmation
+            showNotification(`${vendorName} added to your event!`);
+            updateCart();
+        } catch (err) {
+            console.error(err);
+            button.textContent = '+ Add to Event';
+            button.disabled = false;
+            showNotification(`Failed to add vendor: Please ensure vendor has active services.`, "error");
+        }
     } else {
         // Remove from cart
         cart = cart.filter(item => item.vendorId !== vendorId);
@@ -205,7 +242,11 @@ function updateCart() {
 
     // Update total
     if (cart.length > 0) {
-        cartTotal.style.display = 'block';
+        cartTotal.style.display = 'flex';
+        paymentSection.style.display = 'block';
+
+        const totalAmt = cart.reduce((acc, item) => acc + item.price, 0);
+        document.getElementById('totalPrice').textContent = `₹${totalAmt.toLocaleString()}`;
 
         // Show send request button
         if (!document.querySelector('.send-request-btn')) {
@@ -281,7 +322,7 @@ async function sendVendorRequests() {
             const requestData = {
                 booking_id: selectedBookingId,
                 vendor_id: item.vendorId,
-                service_id: null // For now, we'll set service_id to null since we're just requesting vendor participation
+                service_id: item.serviceId
             };
 
             const response = await fetch('/bookings/items', {
@@ -311,6 +352,41 @@ async function sendVendorRequests() {
     } catch (error) {
         console.error('Error sending vendor requests:', error);
         showNotification('Failed to send some vendor requests. Please try again.', 'error');
+    }
+}
+
+async function proceedToPayment() {
+    if (!selectedBookingId) return showNotification("Please select an event first.", "error");
+    if (cart.length === 0) return showNotification("Cart is empty.", "error");
+
+    const totalAmt = cart.reduce((acc, item) => acc + item.price, 0);
+
+    try {
+        const token = localStorage.getItem('accessToken');
+        const res = await fetch('/payments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                booking_id: selectedBookingId,
+                amount: totalAmt
+            })
+        });
+
+        if (res.ok) {
+            const data = await res.json();
+            showNotification(`Payment intent initialized.`, "success");
+            setTimeout(() => {
+                window.location.href = data.url || 'events_page.html';
+            }, 2000);
+        } else {
+            const err = await res.json();
+            showNotification("Payment Failed: " + err.message, "error");
+        }
+    } catch(err) {
+        showNotification("Payment gateway error", "error");
     }
 }
 

@@ -45,6 +45,16 @@ function setupEventListeners() {
             const id = e.target.dataset.bookingId;
             if (id) viewEventDetails(id);
         }
+        
+        if (e.target.classList.contains('btn-edit-dates')) {
+            const id = e.target.dataset.bookingId;
+            if (id) showEditDatesModal(id);
+        }
+        
+        if (e.target.classList.contains('btn-review')) {
+            const id = e.target.dataset.bookingId;
+            if (id) showReviewModal(id);
+        }
     });
 
     const createEventBtn = document.querySelector('.btn-primary');
@@ -202,9 +212,7 @@ function renderUpcomingEvents(bookings) {
             <span>${formatShortDate(b.event_start)}</span>
             <span>${b.title}</span>
             <span>📍 ${b.location || 'TBD'}</span>
-            <button class="btn-outline" data-booking-id="${b.id}">
-                View Event Details
-            </button>
+            <button class="btn-outline btn-edit-dates" data-booking-id="${b.id}" style="border-color: #3498db; color: #3498db; padding: 5px 10px; font-size: 13px;">📅 Edit Dates</button>
         `;
 
         fragment.appendChild(div);
@@ -228,6 +236,7 @@ function renderPastEvents(bookings) {
             <span>${formatShortDate(b.event_start)}</span>
             <span>${b.title}</span>
             <span>📍 ${b.location || 'TBD'}</span>
+            <button class="btn-outline btn-review" data-booking-id="${b.id}" style="border-color: #f39c12; color: #f39c12; font-size: 13px; padding: 5px 10px;">⭐ Review Vendors</button>
         `;
 
         fragment.appendChild(div);
@@ -272,6 +281,188 @@ function completeBooking(id) {
 function viewEventDetails(id) {
     alert("Event details coming soon. ID: " + id);
 }
+
+// ============== REVIEWS ==============
+async function showReviewModal(bookingId) {
+    try {
+        const token = localStorage.getItem('accessToken');
+        const res = await fetch(`/bookings/${bookingId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const booking = await res.json();
+        
+        if (!booking.items || booking.items.length === 0) {
+            return showError("No vendors found for this booking.");
+        }
+
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        
+        let itemsHtml = booking.items.map(item => `
+            <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 15px; border-radius: 8px;">
+                <h4>Vendor: ${item.vendor_name || 'Unknown'}</h4>
+                <p>Service: ${item.service_title || ''}</p>
+                
+                <div class="form-group" style="margin-top: 10px;">
+                    <label>Rating (1-5)</label>
+                    <input type="number" min="1" max="5" id="rating-${item.id}" required>
+                </div>
+                <div class="form-group">
+                    <label>Comment</label>
+                    <textarea id="comment-${item.id}" rows="2"></textarea>
+                </div>
+                <button type="button" onclick="submitReview('${item.id}')" style="background:#f39c12; color:white; padding:8px 15px; border:none; border-radius:5px; cursor:pointer;">Submit Review</button>
+            </div>
+        `).join('');
+
+        modal.innerHTML = `
+            <div class="modal-content" style="max-height:80vh; overflow-y:auto;">
+                <div class="modal-header">
+                    <h3>Review Vendors</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div style="padding: 10px 0;">
+                    ${itemsHtml}
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        const close = () => modal.remove();
+        modal.querySelector('.modal-close').onclick = close;
+        modal.addEventListener('click', e => { if (e.target === modal) close(); });
+
+    } catch (err) {
+        showError("Failed to fetch booking details for review");
+    }
+}
+
+async function submitReview(itemId) {
+    const rating = document.getElementById(`rating-${itemId}`).value;
+    const comment = document.getElementById(`comment-${itemId}`).value;
+    
+    if(!rating || rating < 1 || rating > 5) return showError("Please provide a rating between 1 and 5.");
+
+    try {
+        const token = localStorage.getItem('accessToken');
+        const res = await fetch('/reviews', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                booking_item_id: itemId,
+                rating: parseInt(rating),
+                comment: comment
+            })
+        });
+
+        if (!res.ok) throw new Error();
+        
+        showSuccess("Review submitted successfully!");
+        document.getElementById(`rating-${itemId}`).closest('div').innerHTML = '<p style="color:green">Review Submitted ✅</p>';
+    } catch(e) {
+        showError("Failed to submit review. Have you already reviewed this vendor?");
+    }
+}
+// =====================================
+
+// ============== RECOMMENDATIONS / EDIT DATES ==============
+async function showEditDatesModal(bookingId) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Event Dates</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="editDatesForm">
+                <p style="font-size:13px; color:#666; margin-bottom:15px;">Warning: Changing dates may cause vendor conflicts. Our Smart Recommendation engine will suggest alternatives if needed!</p>
+                <div class="form-group">
+                    <label>New Start Date *</label>
+                    <input type="datetime-local" name="event_start" required>
+                </div>
+                <div class="form-group">
+                    <label>New End Date *</label>
+                    <input type="datetime-local" name="event_end" required>
+                </div>
+                <button type="submit" style="background:#3498db; color:white; width:100%; padding:10px; border:none; border-radius:5px;">Update Dates</button>
+            </form>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    const close = () => modal.remove();
+    modal.querySelector('.modal-close').onclick = close;
+
+    modal.querySelector('form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        
+        try {
+            const token = localStorage.getItem('accessToken');
+            const res = await fetch(`/bookings/${bookingId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({
+                    event_start: fd.get('event_start'),
+                    event_end: fd.get('event_end')
+                })
+            });
+
+            const data = await res.json();
+            close();
+            
+            if (!res.ok) throw new Error(data.message || 'Failed to update');
+
+            if (data.suggestions && data.suggestions.length > 0) {
+                // Show Recommendations UI
+                showRecommendationsUI(data.suggestions);
+            } else {
+                showSuccess("Dates updated successfully (No vendor conflicts!)");
+            }
+            loadUserEvents();
+            
+        } catch (err) {
+            showError("Failed to update dates: " + err.message);
+        }
+    });
+}
+
+function showRecommendationsUI(suggestions) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    
+    const recsHtml = suggestions.map(rec => `
+        <div style="border: 2px dashed #f39c12; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
+            <h4 style="color: #f39c12;">💡 Recommended Alternative: ${rec.full_name}</h4>
+            <p><strong>Rating:</strong> ⭐ ${rec.average_rating} | <strong>Price Diff:</strong> ~₹${rec.price}</p>
+            <p style="font-size:12px; color:#555;">Because your previous vendor was busy on the new dates, we highly recommend this vendor with a ${(rec.price_proximity_score * 100).toFixed(0)}% match score!</p>
+            <button onclick="window.location.href='vendors_page.html'" style="margin-top:10px; background:#f39c12; color:white; border:none; padding:5px 10px; border-radius:4px;">Book Now</button>
+        </div>
+    `).join('');
+
+    modal.innerHTML = `
+        <div class="modal-content" style="max-height:80vh; overflow-y:auto; border-top: 5px solid #f39c12;">
+            <div class="modal-header">
+                <h3>Vendor Conflicts Detected</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <p>Some of your originally booked vendors are not available on your new dates. Our AI has found amazing alternatives:</p>
+            <div style="margin-top: 20px;">
+                ${recsHtml}
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+    modal.querySelector('.modal-close').onclick = () => modal.remove();
+}
+// ==========================================================
 
 /* ✅ RESTORED CREATE EVENT MODAL */
 function showCreateEventModal() {

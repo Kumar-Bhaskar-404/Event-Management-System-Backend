@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
@@ -21,6 +22,11 @@ require("dotenv").config();
 const pool = require("./config/db");
 
 const app = express();
+
+// View Engine Setup
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+app.use(express.static(path.join(__dirname, "public")));
 
 // Use Helmet to secure Express headers
 app.use(helmet());
@@ -55,15 +61,13 @@ app.use("/api/admin", adminRoutes);
 app.use("/notifications", notificationRoutes);
 
 app.get("/", async (req, res) => {
+    // Health check can still be logged or DB pinged, but we render the landing page for UI
     try {
-        const result = await pool.query("SELECT NOW()");
-        res.json({
-            message: "Database connected!",
-            time: result.rows[0],
-        });
+        await pool.query("SELECT NOW()");
+        res.render("landing");
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "Database connection failed" });
+        res.status(500).send("Database connection failed, cannot load app.");
     }
 });
 

@@ -304,7 +304,12 @@
                     <span id="toggle" class="toggle">👁</span>
                 </div>
 
-                <button type="submit">Sign In</button>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" style="flex: 1; margin-top: 0;">Sign In</button>
+                    <button type="button" id="googleLoginBtn" style="flex: 1; margin-top: 0; background: #DB4437; color: white;">
+                        G Google
+                    </button>
+                </div>
 
             </form>
         </div>
@@ -414,6 +419,36 @@
                 alert(`Login failed: ${error.message}`);
             }
 
+        });
+
+        /* GOOGLE AUTHENTICATION EVENT */
+        document.getElementById('googleLoginBtn').addEventListener('click', async () => {
+            const mockToken = prompt('Please paste a valid Google idToken or cancel (requires valid Client ID setup):');
+            if(!mockToken) return;
+            
+            try {
+                const res = await fetch('/auth/google', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idToken: mockToken })
+                });
+                
+                if (res.ok) {
+                    const { accessToken } = await res.json();
+                    localStorage.setItem("accessToken", accessToken);
+                    localStorage.setItem("authToken", accessToken);
+                    
+                    const payload = JSON.parse(atob(accessToken.split('.')[1]));
+                    if (payload.role === 'admin') window.location.href = "/admin/dashboard";
+                    else if (payload.role === 'vendor') window.location.href = "vendor_home.html";
+                    else window.location.href = "dashboard.html";
+                } else {
+                    alert('Google login failed or invalid token.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Could not connect to Google Auth API.");
+            }
         });
     </script>
 
